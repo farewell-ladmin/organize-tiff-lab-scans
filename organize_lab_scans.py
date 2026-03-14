@@ -48,6 +48,21 @@ def validate_path(folder):
     return True
 
 
+def is_path_safe(root_folder, rel_path):
+    abs_root = os.path.abspath(root_folder)
+    abs_target = os.path.abspath(os.path.join(root_folder, rel_path))
+    return abs_target.startswith(abs_root + os.sep) or abs_target == abs_root
+
+
+def check_overwrite(dst, skip=False):
+    if os.path.exists(dst):
+        if skip:
+            return False
+        print(f"Warning: Overwrite detected: {dst}")
+        return True
+    return True
+
+
 def safe_move(src, dst, retries=3):
     import time
     for attempt in range(retries):
@@ -230,25 +245,29 @@ def find_outliers_with_cache(root_folder, output_csv, metadata_cache, exclude_fo
     return outliers, non_tif_files
 
 
-def move_edits_wrapper(root_folder, edits_csv, edits_folder='Edits', preview=False):
+def move_edits_wrapper(root_folder, edits_csv, edits_folder='Edits', preview=False, skip_existing=False):
     if preview:
         files_to_move = []
         with open(edits_csv, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 if row['is_edit'] == 'True':
-                    src = os.path.join(root_folder, row['path'])
-                    folder = os.path.dirname(row['path'])
+                    rel_path = row['path']
+                    if not is_path_safe(root_folder, rel_path):
+                        print(f"Warning: Path traversal attempt blocked: {rel_path}")
+                        continue
+                    src = os.path.join(root_folder, rel_path)
+                    folder = os.path.dirname(rel_path)
                     if not folder:
                         continue
                     dst = os.path.join(root_folder, folder, edits_folder, row['filename'])
                     files_to_move.append((src, dst))
         return files_to_move
     
-    return move_edits_func(root_folder, edits_csv, edits_folder)
+    return move_edits_func(root_folder, edits_csv, edits_folder, skip_existing)
 
 
-def move_non_tif_wrapper(root_folder, exclude_folders=None, not_tif_folder='Not TIFF', preview=False):
+def move_non_tif_wrapper(root_folder, exclude_folders=None, not_tif_folder='Not TIFF', preview=False, skip_existing=False):
     if exclude_folders is None:
         exclude_folders = {'Edits', 'Non Film Scanner', 'Not TIFF'}
     
@@ -270,10 +289,10 @@ def move_non_tif_wrapper(root_folder, exclude_folders=None, not_tif_folder='Not 
                     files_to_move.append((src, dst))
         return files_to_move
     
-    return move_non_tif_func(root_folder, exclude_folders, not_tif_folder)
+    return move_non_tif_func(root_folder, exclude_folders, not_tif_folder, skip_existing)
 
 
-def move_non_scanner_wrapper(root_folder, outliers_csv, non_scanner_folder='Non Film Scanner', preview=False):
+def move_non_scanner_wrapper(root_folder, outliers_csv, non_scanner_folder='Non Film Scanner', preview=False, skip_existing=False):
     if preview:
         with open(outliers_csv, 'r') as f:
             reader = csv.DictReader(f)
@@ -292,6 +311,10 @@ def move_non_scanner_wrapper(root_folder, outliers_csv, non_scanner_folder='Non 
         files_to_move = []
         
         for folder, files in folder_groups.items():
+            if not is_path_safe(root_folder, folder):
+                print(f"Warning: Path traversal attempt blocked: {folder}")
+                continue
+            
             folder_path = os.path.join(root_folder, folder)
             
             all_files_in_folder = set()
@@ -356,6 +379,7 @@ def main():
     do_outliers = '--outliers' in sys.argv or do_all
     do_move = '--move' in sys.argv or do_all
     force = '--force' in sys.argv
+    skip_overwrites = '--skip' in sys.argv
     
     edits_csv = 'edits_report.csv'
     outliers_csv = 'outliers_report.csv'
@@ -442,16 +466,22 @@ def main():
         
         if (do_outliers or do_all) and non_scanner_to_move:
             print("Moving non-scanner files...")
-            moved = move_non_scanner_wrapper(folder, outliers_csv)
+            moved, skipped = move_non_scanner_wrapper(folder, outliers_csv, skip_existing=skip_overwrites)
             print(f"  Moved {len(moved)} files")
+            if skipped:
+                print(f"  Skipped {len(skipped)} existing files (--skip)")
         if (do_outliers or do_all) and non_tif_to_move:
             print("Moving non-TIF files...")
-            moved = move_non_tif_wrapper(folder)
+            moved, skipped = move_non_tif_wrapper(folder, skip_existing=skip_overwrites)
             print(f"  Moved {len(moved)} files")
+            if skipped:
+                print(f"  Skipped {len(skipped)} existing files (--skip)")
         if do_edits and edits_to_move:
             print("Moving edits...")
-            moved = move_edits_wrapper(folder, edits_csv)
+            moved, skipped = move_edits_wrapper(folder, edits_csv, skip_existing=skip_overwrites)
             print(f"  Moved {len(moved)} files")
+            if skipped:
+                print(f"  Skipped {len(skipped)} existing files (--skip)")
     
     print("\nDone!")
 

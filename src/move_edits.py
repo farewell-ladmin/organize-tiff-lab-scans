@@ -3,8 +3,9 @@ import csv
 import shutil
 import sys
 
-def move_edits(root_folder, edits_csv, edits_folder_name='Edits'):
+def move_edits(root_folder, edits_csv, edits_folder_name='Edits', skip_existing=False):
     moved = []
+    skipped = []
     
     with open(edits_csv, 'r') as f:
         reader = csv.DictReader(f)
@@ -24,6 +25,11 @@ def move_edits(root_folder, edits_csv, edits_folder_name='Edits'):
                 dst = os.path.join(edits_folder, filename)
                 
                 if os.path.exists(src):
+                    if os.path.exists(dst):
+                        if skip_existing:
+                            skipped.append(dst)
+                            continue
+                        print(f"Warning: Overwrite: {dst}")
                     try:
                         shutil.move(src, dst)
                         moved.append((src, dst))
@@ -32,16 +38,16 @@ def move_edits(root_folder, edits_csv, edits_folder_name='Edits'):
                 else:
                     print(f"Missing: {src}")
     
-    return moved
+    return moved, skipped
 
 
-def move_non_scanner(root_folder, outliers_csv, non_scanner_folder_name='Non Film Scanner'):
+def move_non_scanner(root_folder, outliers_csv, non_scanner_folder_name='Non Film Scanner', skip_existing=False):
     with open(outliers_csv, 'r') as f:
         reader = csv.DictReader(f)
         dslr_files = [row for row in reader if row['outlier_reason'] == 'dslr_shot']
     
     if not dslr_files:
-        return []
+        return [], []
     
     folder_groups = {}
     for row in dslr_files:
@@ -51,6 +57,7 @@ def move_non_scanner(root_folder, outliers_csv, non_scanner_folder_name='Non Fil
         folder_groups[folder].append(row)
     
     moved = []
+    skipped = []
     
     for folder, files in folder_groups.items():
         folder_path = os.path.join(root_folder, folder)
@@ -74,6 +81,11 @@ def move_non_scanner(root_folder, outliers_csv, non_scanner_folder_name='Non Fil
                 src = os.path.join(root_folder, row['path'])
                 dst = os.path.join(dest_folder, row['filename'])
                 if os.path.exists(src):
+                    if os.path.exists(dst):
+                        if skip_existing:
+                            skipped.append(dst)
+                            continue
+                        print(f"Warning: Overwrite: {dst}")
                     try:
                         shutil.move(src, dst)
                         moved.append((src, dst))
@@ -86,13 +98,18 @@ def move_non_scanner(root_folder, outliers_csv, non_scanner_folder_name='Non Fil
                 src = os.path.join(root_folder, row['path'])
                 dst = os.path.join(ns_folder, row['filename'])
                 if os.path.exists(src):
+                    if os.path.exists(dst):
+                        if skip_existing:
+                            skipped.append(dst)
+                            continue
+                        print(f"Warning: Overwrite: {dst}")
                     try:
                         shutil.move(src, dst)
                         moved.append((src, dst))
                     except (OSError, IOError) as e:
                         print(f"Warning: Failed to move {src}: {e}")
     
-    return moved
+    return moved, skipped
 
 def main():
     if len(sys.argv) < 3:

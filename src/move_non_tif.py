@@ -28,13 +28,14 @@ def get_file_ext(filename):
     return os.path.splitext(filename)[1].lower()
 
 
-def move_non_tif(root_folder, exclude_folders=None, not_tif_folder_name='Not TIFF'):
+def move_non_tif(root_folder, exclude_folders=None, not_tif_folder_name='Not TIFF', skip_existing=False):
     if exclude_folders is None:
         exclude_folders = {'Edits', 'Non Film Scanner', 'Not TIFF'}
     
     ignored_files = {'.DS_Store', 'Thumbs.db', 'desktop.ini'}
     
     moved = []
+    skipped = []
     
     for dirpath, dirnames, filenames in os.walk(root_folder):
         dirnames[:] = [d for d in dirnames if d not in exclude_folders]
@@ -53,13 +54,18 @@ def move_non_tif(root_folder, exclude_folders=None, not_tif_folder_name='Not TIF
                 os.makedirs(not_tif_folder, exist_ok=True)
                 
                 dst = os.path.join(not_tif_folder, fname)
+                if os.path.exists(dst):
+                    if skip_existing:
+                        skipped.append(dst)
+                        continue
+                    print(f"Warning: Overwrite: {dst}")
                 try:
                     shutil.move(src, dst)
                     moved.append((src, dst))
                 except (OSError, IOError) as e:
                     print(f"Warning: Failed to move {src}: {e}")
     
-    return moved
+    return moved, skipped
 
 def main():
     if len(sys.argv) < 2:
