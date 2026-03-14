@@ -14,13 +14,15 @@ Two main reasons:
 
 If you're good at file organization, you probably don't need this. I'm not, so I built it.
 
+Niche problems require niche solutions. Niche solutions require vibe coding when you're bad at Python.
+
 ## Acknowledgments
 
 Shoutout to [Midwest Film Company](https://www.midwestfilmco.com/) - they offer "cinema" scans of 35mm on a Blackmagic Cintel motion picture scanner. Absolutely stellar lab. Not sponsored, just genuinely awesome.
 
 ## ⚠️ WARNING - VIBE CODED
 
-**This tool was vibe coded. It has not been extensively tested. DO NOT run on originals without backing them up first.**
+**This tool was vibe coded to solve a very niche problem. It has not been extensively tested. DO NOT run on originals without backing them up first.**
 
 I am not responsible if your AI assistant or this tool eats your files. Always:
 - Back up your data before running
