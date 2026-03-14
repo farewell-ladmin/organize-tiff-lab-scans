@@ -6,20 +6,13 @@ Workflow:
 2. Scan for outliers (DSLR shots, non-TIF files)
 3. Move edits to Edits/ subfolders
 4. Move non-TIF files to Not TIFF/ subfolders
-
-Usage:
-    python organize_lab_scans.py <folder>           # Preview only
-    python organize_lab_scans.py <folder> --edits    # Edits only
-    python organize_lab_scans.py <folder> --outliers # Outliers only
-    python organize_lab_scans.py <folder> --move      # Move files only (uses existing CSVs)
-    python organize_lab_scans.py <folder> --all       # Full workflow (default)
-    python organize_lab_scans.py <folder> --all --force  # Run without confirmation
 """
 
 import os
 import sys
 import csv
 import shutil
+import argparse
 
 from src.scan_edits import get_tif_metadata, detect_edit, scan_for_edits
 from src.find_outliers import find_outliers
@@ -362,11 +355,34 @@ def prompt_confirm(message):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print(__doc__)
+    parser = argparse.ArgumentParser(
+        description='Organize film scanner output - detect edits and outliers, move files to subfolders.',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='''
+Examples:
+  %(prog)s /path/to/scans              # Preview only
+  %(prog)s /path/to/scans --edits      # Scan edits only
+  %(prog)s /path/to/scans --outliers   # Scan outliers only
+  %(prog)s /path/to/scans --all        # Full workflow with confirmation
+  %(prog)s /path/to/scans --all --force  # Full workflow without confirmation
+  %(prog)s /path/to/scans --all --skip   # Skip existing files on move
+        '''
+    )
+    parser.add_argument('folder', help='Folder containing film scans')
+    parser.add_argument('--edits', action='store_true', help='Scan for edited files')
+    parser.add_argument('--outliers', action='store_true', help='Scan for outliers (DSLR, non-TIF)')
+    parser.add_argument('--move', action='store_true', help='Move files (uses existing CSVs)')
+    parser.add_argument('--all', action='store_true', help='Run full workflow (scan + move)')
+    parser.add_argument('--force', action='store_true', help='Skip confirmation prompt')
+    parser.add_argument('--skip', action='store_true', help='Skip files that already exist')
+    
+    args = parser.parse_args()
+    
+    if not os.path.exists(args.folder):
+        print(f"Error: Folder does not exist: {args.folder}")
         sys.exit(1)
     
-    folder = sys.argv[1]
+    folder = args.folder
     
     try:
         validate_path(folder)
@@ -374,12 +390,11 @@ def main():
         print(f"Error: {e}")
         sys.exit(1)
     
-    do_all = '--all' in sys.argv
-    do_edits = '--edits' in sys.argv or do_all
-    do_outliers = '--outliers' in sys.argv or do_all
-    do_move = '--move' in sys.argv or do_all
-    force = '--force' in sys.argv
-    skip_overwrites = '--skip' in sys.argv
+    do_edits = args.edits or args.all
+    do_outliers = args.outliers or args.all
+    do_move = args.move or args.all
+    force = args.force
+    skip_overwrites = args.skip
     
     edits_csv = 'edits_report.csv'
     outliers_csv = 'outliers_report.csv'
@@ -414,7 +429,7 @@ def main():
         
         if do_edits:
             edits_to_move = move_edits_wrapper(folder, edits_csv, preview=True)
-        if do_outliers or do_all:
+        if do_outliers or args.all:
             non_tif_to_move = move_non_tif_wrapper(folder, preview=True)
             non_scanner_to_move = move_non_scanner_wrapper(folder, outliers_csv, preview=True)
         
@@ -464,13 +479,13 @@ def main():
                 print("Aborted.")
                 return
         
-        if (do_outliers or do_all) and non_scanner_to_move:
+        if (do_outliers or args.all) and non_scanner_to_move:
             print("Moving non-scanner files...")
             moved, skipped = move_non_scanner_wrapper(folder, outliers_csv, skip_existing=skip_overwrites)
             print(f"  Moved {len(moved)} files")
             if skipped:
                 print(f"  Skipped {len(skipped)} existing files (--skip)")
-        if (do_outliers or do_all) and non_tif_to_move:
+        if (do_outliers or args.all) and non_tif_to_move:
             print("Moving non-TIF files...")
             moved, skipped = move_non_tif_wrapper(folder, skip_existing=skip_overwrites)
             print(f"  Moved {len(moved)} files")
