@@ -46,13 +46,13 @@ This tool helps identify and organize these into:
 
 The tool preserves your folder hierarchy. Given:
 ```
-/path/to/scans/Originals/4163_MWFC XX +3/
+/path/to/scans/Originals/film_roll_001/
 ```
 
-- **Edits** → `/path/to/scans/Originals/4163_MWFC XX +3/Edits/`
-- **Not TIFF** → `/path/to/scans/Originals/4163_MWFC XX +3/Not TIFF/`
-- **Non Film Scanner** (ALL DSLR folder) → `/path/to/scans/Originals/Non Film Scanner/4163_MWFC XX +3/`
-- **Non Film Scanner** (MIXED folder) → `/path/to/scans/Originals/4163_MWFC XX +3/Non Film Scanner/`
+- **Edits** → `/path/to/scans/Originals/film_roll_001/Edits/`
+- **Not TIFF** → `/path/to/scans/Originals/film_roll_001/Not TIFF/`
+- **Non Film Scanner** (ALL DSLR folder) → `/path/to/scans/Originals/Non Film Scanner/film_roll_001/`
+- **Non Film Scanner** (MIXED folder) → `/path/to/scans/Originals/film_roll_001/Non Film Scanner/`
 
 ## What Each Script Does
 
