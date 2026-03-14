@@ -18,7 +18,7 @@ Niche problems require niche solutions. Niche solutions require vibe coding when
 
 ## Acknowledgments
 
-Shoutout to [Midwest Film Company](https://www.midwestfilmco.com/) - they offer "cinema" scans of 35mm on a Blackmagic Cintel motion picture scanner. Absolutely stellar lab. Not sponsored, just genuinely awesome.
+Shoutout to [Midwest Film Company](https://www.midwestfilmco.com/) - they offer cinema scans of 35mm on a Blackmagic Cintel motion picture scanner. Absolutely stellar lab. Not sponsored, just genuinely awesome.
 
 ## ⚠️ WARNING - VIBE CODED
 
