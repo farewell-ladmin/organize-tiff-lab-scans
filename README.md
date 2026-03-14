@@ -18,7 +18,7 @@ Niche problems require niche solutions. Niche solutions require vibe coding when
 
 ## Acknowledgments
 
-Shoutout to [Midwest Film Company](https://www.midwestfilmco.com/) - they offer "cinema" scans of 35mm on a Blackmagic Cintel motion picture scanner. Absolutely stellar lab. Not sponsored, just genuinely awesome.
+Inspired by film labs and community workflows for organizing cinema scanner output.
 
 ## ⚠️ WARNING - VIBE CODED
 
@@ -109,9 +109,9 @@ python organize_lab_scans.py "/path/to/scans" --move
 
 **The detection logic was tuned for a VERY SPECIFIC workflow:**
 
-- A specific cinema scanner (Blackmagic Cintel)
-- Specific editing software (Lightroom on Windows, Luminar)
-- Specific filename patterns from a specific person's workflow
+- A specific film scanner
+- Specific editing software
+- Specific filename patterns from a specific workflow
 
 **You WILL need to customize this for your own workflow.**
 
