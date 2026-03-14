@@ -1,0 +1,13 @@
+* text=auto
+
+# Explicitly set text files
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.tif binary
+*.tiff binary
