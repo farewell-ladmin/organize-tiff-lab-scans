@@ -2,6 +2,18 @@ import os
 import tifffile
 import csv
 import sys
+import re
+
+
+def get_file_ext(filename):
+    filename_lower = filename.lower()
+    if filename_lower.endswith('.tiff'):
+        return '.tiff'
+    if filename_lower.endswith('.tif'):
+        return '.tif'
+    if '.tif_' in filename_lower or '.tiff_' in filename_lower:
+        return '.tif'
+    return os.path.splitext(filename)[1].lower()
 
 def get_tif_metadata(filepath):
     try:
@@ -16,7 +28,7 @@ def get_tif_metadata(filepath):
                                'Compression', 'Photometric', 'SamplesPerPixel', 'PageNumber',
                                'HostComputer', 'InstrumentSerialNumber']:
                         tags[name] = str(tag.value)
-                except:
+                except (KeyError, AttributeError, ValueError):
                     pass
             tags['_file_mtime'] = os.path.getmtime(filepath)
             tags['_file_size'] = os.path.getsize(filepath)
@@ -37,7 +49,7 @@ def find_outliers(root_folder, output_csv, exclude_folders=None, rarity_threshol
         
         for fname in filenames:
             fpath = os.path.join(dirpath, fname)
-            ext = os.path.splitext(fname)[1].lower()
+            ext = get_file_ext(fname)
             
             if ext not in ['.tif', '.tiff']:
                 rel_path = os.path.relpath(fpath, root_folder)

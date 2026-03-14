@@ -33,8 +33,8 @@ The tool operates on: `/path/to/scans`
 
 1. `organize_lab_scans.py` - Main orchestrator (in root)
 2. `src/scan_edits.py` - Edit detection
-3. `src/find_outliers.py` - Outlier detection  
-4. `src/move_edits.py` - Move edits
+3. `src/find_outliers.py` - Outlier detection (DSLR, non-TIF)
+4. `src/move_edits.py` - Move edits and non-scanner files
 5. `src/move_non_tif.py` - Move non-TIF files
 
 ## Configuration Options
@@ -43,16 +43,11 @@ The tool operates on: `/path/to/scans`
 
 Currently looks for: `.tif`, `.tiff`
 
+The code also detects TIFFs by content (magic bytes) for files with unusual extensions like `.tif_original`.
+
 To add more formats (e.g., `.png`, `.jpg`):
 
-Edit `organize_lab_scans.py` and change:
-```python
-if not fname.lower().endswith(('.tif', '.tiff')):
-```
-to:
-```python
-if not fname.lower().endswith(('.tif', '.tiff', '.png', '.jpg')):
-```
+Edit `src/find_outliers.py` and `src/move_non_tif.py` - look for `get_file_ext()` function:
 
 ### Change What Folders to Ignore
 
@@ -67,7 +62,7 @@ And modify the set.
 
 ### Change Edit Detection Criteria
 
-In `organize_lab_scans.py`, look for `detect_edit()` function. You can add/remove:
+In `src/scan_edits.py`, look for `detect_edit()` function. You can add/remove:
 
 - Artist metadata presence
 - Copyright metadata presence  
@@ -78,11 +73,19 @@ In `organize_lab_scans.py`, look for `detect_edit()` function. You can add/remov
 
 ### Change Outlier Detection
 
-In `organize_lab_scans.py`, look for `find_outliers()` function:
+In `src/find_outliers.py`, look for outlier detection logic:
 
 - DSLR detection: Looks for Make/Model metadata
+- Non-TIF files: .dop (Capture One), .arw (Sony RAW), etc.
 - Rare metadata: Currently checks Make, Model, Compression, BitsPerSample, XResolution, YResolution
 - Threshold: Currently `< 15 files or < 3%` = outlier
+
+### Non-Film Scanner (DSLR) Handling
+
+The tool handles DSLR/non-scanner files differently:
+
+- **All DSLR folder**: Entire folder moved to `{parent}/Non Film Scanner/{folder_name}/`
+- **Mixed folder**: Only DSLR files moved to `{parent}/Non Film Scanner/`
 
 ### Change Subfolder Names
 
@@ -94,13 +97,13 @@ Find and replace these strings in the code.
 
 ### "Add support for PNG files"
 ```
-Add .png to the file format detection in organize_lab_scans.py. 
-Also update move_non_tif.py to handle png files as originals, not non-tif.
+Add .png to the file format detection in src/find_outliers.py and 
+src/move_non_tif.py. Update get_file_ext() to handle png as an original format.
 ```
 
 ### "Change my edits detection to look for Photoshop instead of Lightroom"
 ```
-In organize_lab_scans.py, update detect_edit() to flag files with "Photoshop" 
+In src/scan_edits.py, update detect_edit() to flag files with "Photoshop" 
 in the Software field as edits, instead of the current Lightroom detection.
 ```
 
@@ -140,7 +143,7 @@ python organize_lab_scans.py "/your/scan/folder" --all
 # With confirmation  
 python organize_lab_scans.py "/your/scan/folder" --all
 
-# Force (no confirmation)
+# Force (no confirmation, for agents/non-interactive)
 python organize_lab_scans.py "/your/scan/folder" --all --force
 ```
 

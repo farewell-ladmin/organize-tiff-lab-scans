@@ -28,6 +28,7 @@ I am not responsible if your AI assistant or this tool eats your files. Always:
 - Back up your data before running
 - Use `--all` without `--force` to preview changes
 - Verify the preview before confirming
+- **Network shares**: Consider running on a local copy first, then syncing back
 
 ## Purpose
 
@@ -37,9 +38,21 @@ When receiving scans from a lab over many years, you may have:
 - Non-scanner files (DSLR shots, RAW files, sidecar files)
 
 This tool helps identify and organize these into:
-- `Edits/` - Files detected as edited
-- `Not TIFF/` - Non-TIF files found in scan folders
+- `Edits/` - Files detected as edited (moved into `Edits/` subfolder within parent)
+- `Not TIFF/` - Non-TIF files found in scan folders (moved into `Not TIFF/` subfolder within parent)
 - `Non Film Scanner/` - Folders identified as non-scanner (DSLR) shots
+
+### Folder Structure
+
+The tool preserves your folder hierarchy. Given:
+```
+/path/to/scans/Originals/4163_MWFC XX +3/
+```
+
+- **Edits** → `/path/to/scans/Originals/4163_MWFC XX +3/Edits/`
+- **Not TIFF** → `/path/to/scans/Originals/4163_MWFC XX +3/Not TIFF/`
+- **Non Film Scanner** (ALL DSLR folder) → `/path/to/scans/Originals/Non Film Scanner/4163_MWFC XX +3/`
+- **Non Film Scanner** (MIXED folder) → `/path/to/scans/Originals/4163_MWFC XX +3/Non Film Scanner/`
 
 ## What Each Script Does
 
@@ -137,8 +150,10 @@ This revealed the patterns used for detection:
 
 ### Current Outlier Detection
 - Files with Make/Model metadata (DSLR shots)
-- Non-TIF files (.dop, .arw, etc.)
+- Non-TIF files (.dop, .arw, .cop, etc.)
 - Rare metadata values (configurable threshold)
+
+> **Note on DSLR files**: Non-scanner (DSLR) shots are identified by Make/Model metadata. When a folder contains both DSLR and scanner files, the DSLR files are moved to a Non Film Scanner subfolder. Consider running outlier detection before making edits to your originals.
 
 ### To Customize
 

@@ -16,7 +16,7 @@ def get_tif_metadata(filepath):
                                'Compression', 'Photometric', 'SamplesPerPixel', 'PageNumber',
                                'HostComputer', 'InstrumentSerialNumber']:
                         tags[name] = str(tag.value)
-                except:
+                except (KeyError, AttributeError, ValueError):
                     pass
             tags['_file_mtime'] = os.path.getmtime(filepath)
             tags['_file_size'] = os.path.getsize(filepath)
@@ -60,11 +60,12 @@ def detect_edit(meta, filename):
     name_without_ext = filename_lower.replace('.tif', '').replace('.tiff', '')
     
     has_filename_marker = False
-    if '-edit' in name_without_ext:
+    filename_lower_for_suffix = filename_lower
+    if '-edit' in name_without_ext or '-edit' in filename_lower_for_suffix:
         has_filename_marker = True
-    elif '_original' in name_without_ext:
+    elif '_original' in name_without_ext or '_original' in filename_lower_for_suffix:
         has_filename_marker = True
-    elif '-copy' in name_without_ext or 'copy' in name_without_ext:
+    elif '-copy' in name_without_ext or 'copy' in name_without_ext or 'copy' in filename_lower_for_suffix:
         has_filename_marker = True
     elif name_without_ext.count('-2') > 1:
         has_filename_marker = True

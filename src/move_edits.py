@@ -24,10 +24,73 @@ def move_edits(root_folder, edits_csv, edits_folder_name='Edits'):
                 dst = os.path.join(edits_folder, filename)
                 
                 if os.path.exists(src):
-                    shutil.move(src, dst)
-                    moved.append((src, dst))
+                    try:
+                        shutil.move(src, dst)
+                        moved.append((src, dst))
+                    except (OSError, IOError) as e:
+                        print(f"Warning: Failed to move {src}: {e}")
                 else:
                     print(f"Missing: {src}")
+    
+    return moved
+
+
+def move_non_scanner(root_folder, outliers_csv, non_scanner_folder_name='Non Film Scanner'):
+    with open(outliers_csv, 'r') as f:
+        reader = csv.DictReader(f)
+        dslr_files = [row for row in reader if row['outlier_reason'] == 'dslr_shot']
+    
+    if not dslr_files:
+        return []
+    
+    folder_groups = {}
+    for row in dslr_files:
+        folder = os.path.dirname(row['path'])
+        if folder not in folder_groups:
+            folder_groups[folder] = []
+        folder_groups[folder].append(row)
+    
+    moved = []
+    
+    for folder, files in folder_groups.items():
+        folder_path = os.path.join(root_folder, folder)
+        
+        all_files_in_folder = set()
+        for f in os.listdir(folder_path):
+            if os.path.isfile(os.path.join(folder_path, f)):
+                all_files_in_folder.add(f)
+        
+        dslr_filenames = set(f['filename'] for f in files)
+        
+        if all_files_in_folder == dslr_filenames:
+            folder_name = os.path.basename(folder)
+            if folder:
+                parent_of_folder = os.path.dirname(folder)
+                dest_folder = os.path.join(root_folder, parent_of_folder, non_scanner_folder_name, folder_name)
+            else:
+                dest_folder = os.path.join(root_folder, non_scanner_folder_name, folder_name)
+            os.makedirs(dest_folder, exist_ok=True)
+            for row in files:
+                src = os.path.join(root_folder, row['path'])
+                dst = os.path.join(dest_folder, row['filename'])
+                if os.path.exists(src):
+                    try:
+                        shutil.move(src, dst)
+                        moved.append((src, dst))
+                    except (OSError, IOError) as e:
+                        print(f"Warning: Failed to move {src}: {e}")
+        else:
+            ns_folder = os.path.join(root_folder, folder, non_scanner_folder_name)
+            os.makedirs(ns_folder, exist_ok=True)
+            for row in files:
+                src = os.path.join(root_folder, row['path'])
+                dst = os.path.join(ns_folder, row['filename'])
+                if os.path.exists(src):
+                    try:
+                        shutil.move(src, dst)
+                        moved.append((src, dst))
+                    except (OSError, IOError) as e:
+                        print(f"Warning: Failed to move {src}: {e}")
     
     return moved
 
