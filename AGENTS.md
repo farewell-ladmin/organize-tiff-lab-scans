@@ -145,6 +145,9 @@ python organize_lab_scans.py "/your/scan/folder" --all
 
 # Force (no confirmation, for agents/non-interactive)
 python organize_lab_scans.py "/your/scan/folder" --all --force
+
+# Skip existing files
+python organize_lab_scans.py "/your/scan/folder" --all --force --skip
 ```
 
 ## Output Files

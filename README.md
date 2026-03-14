@@ -79,6 +79,11 @@ Or use something like `pipx` or operate inside a `venv` unlike the author who al
 
 ## Usage
 
+### Get Help
+```bash
+python organize_lab_scans.py --help
+```
+
 ### Basic (Preview Only)
 ```bash
 python organize_lab_scans.py "/path/to/scans" --all
@@ -93,6 +98,11 @@ python organize_lab_scans.py "/path/to/scans" --all
 ### Without Confirmation (FORCE)
 ```bash
 python organize_lab_scans.py "/path/to/scans" --all --force
+```
+
+### Skip Existing Files
+```bash
+python organize_lab_scans.py "/path/to/scans" --all --force --skip
 ```
 
 ### Individual Steps
