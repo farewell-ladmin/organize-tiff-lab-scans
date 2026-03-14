@@ -126,7 +126,14 @@ instead of actually moving files. Or add a --report-only flag.
 
 ## Running the Tool
 
+**IMPORTANT: Use a virtual environment or pipx** - Modern OSes get annoyed with system-wide pip packages.
+
 ```bash
+# Option 1: Virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+pip install pillow tifffile
+
 # Preview what would happen
 python organize_lab_scans.py "/your/scan/folder" --all
 
