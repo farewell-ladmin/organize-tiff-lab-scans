@@ -62,6 +62,8 @@ This tool helps identify and organize these into:
 pip install pillow tifffile
 ```
 
+Or use something like `pipx` or operate inside a `venv` unlike the author who always forgets.
+
 ## Usage
 
 ### Basic (Preview Only)
