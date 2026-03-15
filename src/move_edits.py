@@ -76,38 +76,28 @@ def move_non_scanner(root_folder, outliers_csv, non_scanner_folder_name='Non Fil
                 dest_folder = os.path.join(root_folder, parent_of_folder, non_scanner_folder_name, folder_name)
             else:
                 dest_folder = os.path.join(root_folder, non_scanner_folder_name, folder_name)
-            os.makedirs(dest_folder, exist_ok=True)
-            for row in files:
-                src = os.path.join(root_folder, row['path'])
-                dst = os.path.join(dest_folder, row['filename'])
-                if os.path.exists(src):
-                    if os.path.exists(dst):
-                        if skip_existing:
-                            skipped.append(dst)
-                            continue
-                        print(f"Warning: Overwrite: {dst}")
-                    try:
-                        shutil.move(src, dst)
-                        moved.append((src, dst))
-                    except (OSError, IOError) as e:
-                        print(f"Warning: Failed to move {src}: {e}")
-        else:
-            ns_folder = os.path.join(root_folder, folder, non_scanner_folder_name)
-            os.makedirs(ns_folder, exist_ok=True)
-            for row in files:
-                src = os.path.join(root_folder, row['path'])
-                dst = os.path.join(ns_folder, row['filename'])
-                if os.path.exists(src):
-                    if os.path.exists(dst):
-                        if skip_existing:
-                            skipped.append(dst)
-                            continue
-                        print(f"Warning: Overwrite: {dst}")
-                    try:
-                        shutil.move(src, dst)
-                        moved.append((src, dst))
-                    except (OSError, IOError) as e:
-                        print(f"Warning: Failed to move {src}: {e}")
+            
+            source_folder_path = os.path.join(root_folder, folder)
+            try:
+                os.makedirs(dest_folder, exist_ok=True)
+                shutil.move(source_folder_path, dest_folder)
+                moved.append((source_folder_path, dest_folder))
+            except (OSError, IOError) as e:
+                print(f"Warning: Failed to move folder {source_folder_path}: {e}")
+                for row in files:
+                    src = os.path.join(root_folder, row['path'])
+                    dst = os.path.join(dest_folder, row['filename'])
+                    if os.path.exists(src):
+                        if os.path.exists(dst):
+                            if skip_existing:
+                                skipped.append(dst)
+                                continue
+                            print(f"Warning: Overwrite: {dst}")
+                        try:
+                            shutil.move(src, dst)
+                            moved.append((src, dst))
+                        except (OSError, IOError) as e:
+                            print(f"Warning: Failed to move {src}: {e}")
     
     return moved, skipped
 
