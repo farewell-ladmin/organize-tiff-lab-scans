@@ -113,7 +113,7 @@ Update detect_edit() to look for "Capture One" in the Software field,
 and remove the Lightroom detection.
 ```
 
-### "Make -final标记为编辑"
+### "Add -final as an edit marker"
 ```
 Update the filename pattern detection to also flag files containing 
 "-final" as edits, in addition to the existing -2, -3, -Edit patterns.
